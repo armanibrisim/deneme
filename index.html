@@ -1,4 +1,50 @@
+-- SQL Script for Triggers
 
+-- Trigger 1: Automatically update stock when an order is placed
+DELIMITER $$
+CREATE TRIGGER update_stock
+AFTER INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    UPDATE Products
+    SET stock = stock - NEW.quantity
+    WHERE product_id = NEW.product_id;
+END $$
+DELIMITER ;
+
+-- Trigger 2: Log changes in product prices
+DELIMITER $$
+CREATE TRIGGER log_price_changes
+BEFORE UPDATE ON Products
+FOR EACH ROW
+BEGIN
+    INSERT INTO Price_Log (product_id, old_price, new_price, change_date)
+    VALUES (OLD.product_id, OLD.price, NEW.price, NOW());
+END $$
+DELIMITER ;
+
+-- SQL Script for Stored Procedures
+
+-- Procedure 1: Process an order
+DELIMITER $$
+CREATE PROCEDURE process_order(IN user_id INT, IN product_id INT, IN qty INT)
+BEGIN
+    INSERT INTO Orders (user_id, product_id, quantity, order_date)
+    VALUES (user_id, product_id, qty, NOW());
+END $$
+DELIMITER ;
+
+-- Procedure 2: Generate a sales report
+DELIMITER $$
+CREATE PROCEDURE sales_report()
+BEGIN
+    SELECT product_id, SUM(quantity) AS total_sold
+    FROM Orders
+    GROUP BY product_id;
+END $$
+DELIMITER ;
+
+-- PHP Web Access Module (index.php)
 
 <?php
 $servername = "localhost";
