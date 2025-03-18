@@ -1,87 +1,465 @@
--- SQL Script for Triggers
-
--- Trigger 1: Automatically update stock when an order is placed
-DELIMITER $$
-CREATE TRIGGER update_stock
-AFTER INSERT ON Orders
-FOR EACH ROW
-BEGIN
-    UPDATE Products
-    SET stock = stock - NEW.quantity
-    WHERE product_id = NEW.product_id;
-END $$
-DELIMITER ;
-
--- Trigger 2: Log changes in product prices
-DELIMITER $$
-CREATE TRIGGER log_price_changes
-BEFORE UPDATE ON Products
-FOR EACH ROW
-BEGIN
-    INSERT INTO Price_Log (product_id, old_price, new_price, change_date)
-    VALUES (OLD.product_id, OLD.price, NEW.price, NOW());
-END $$
-DELIMITER ;
-
--- SQL Script for Stored Procedures
-
--- Procedure 1: Process an order
-DELIMITER $$
-CREATE PROCEDURE process_order(IN user_id INT, IN product_id INT, IN qty INT)
-BEGIN
-    INSERT INTO Orders (user_id, product_id, quantity, order_date)
-    VALUES (user_id, product_id, qty, NOW());
-END $$
-DELIMITER ;
-
--- Procedure 2: Generate a sales report
-DELIMITER $$
-CREATE PROCEDURE sales_report()
-BEGIN
-    SELECT product_id, SUM(quantity) AS total_sold
-    FROM Orders
-    GROUP BY product_id;
-END $$
-DELIMITER ;
-
--- PHP Web Access Module (index.php)
-
-<?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "cs306";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user_id = $_POST["user_id"];
-    $product_id = $_POST["product_id"];
-    $qty = $_POST["quantity"];
-    $sql = "CALL process_order($user_id, $product_id, $qty)";
-    if ($conn->query($sql) === TRUE) {
-        echo "Order placed successfully.";
-    } else {
-        echo "Error: " . $conn->error;
-    }
-}
-$conn->close();
-?>
-
+<!-- index.html - Main page -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Order Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2022 World Cup Database</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .jumbotron {
+            background-color: #8a1538;
+            color: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 0.3rem;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background-color: #56042c;
+            color: white;
+        }
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    <form method="post">
-        User ID: <input type="number" name="user_id" required><br>
-        Product ID: <input type="number" name="product_id" required><br>
-        Quantity: <input type="number" name="quantity" required><br>
-        <input type="submit" value="Place Order">
-    </form>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="display-4">2022 World Cup Database</h1>
+            <p class="lead">Access and manage information about teams, players, matches, and more!</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Add New Match</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Schedule a new match between teams, assign stadium and referee.</p>
+                        <a href="add_match.html" class="btn btn-primary">Go to Module</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Register Goal</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>Record a new goal with details including scorer, time, and goal type.</p>
+                        <a href="register_goal.html" class="btn btn-primary">Go to Module</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Team Performance</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>View comprehensive statistics and details about a specific team.</p>
+                        <a href="team_performance.html" class="btn btn-primary">Go to Module</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>About This Database</h4>
+                    </div>
+                    <div class="card-body">
+                        <p>This database is designed to track comprehensive data about the 2022 World Cup, including teams, players, matches, goals, stadiums, and more. It provides a platform for football enthusiasts, analysts, and professionals to access detailed information about the tournament.</p>
+                        <p>The database covers various aspects of the World Cup, making it a valuable resource for anyone interested in football statistics and information.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 - World Cup Database Project</p>
+            <p>Developed by: Yigit Ali Erdem, Arman Ibrisim, Cagdas Eylem Aksoy</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+<!-- add_match.html - Module 1 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Match - World Cup Database</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .jumbotron {
+            background-color: #8a1538;
+            color: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 0.3rem;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background-color: #56042c;
+            color: white;
+        }
+        .result-container {
+            display: none;
+            margin-top: 20px;
+        }
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="display-4">Add New Match</h1>
+            <p class="lead">Schedule a new match between teams in the World Cup Database</p>
+            <a href="index.html" class="btn btn-light">Back to Home</a>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Match Details Form</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="addMatchForm">
+                            <div class="mb-3 row">
+                                <label for="matchDate" class="col-sm-3 col-form-label">Match Date:</label>
+                                <div class="col-sm-9">
+                                    <input type="date" class="form-control" id="matchDate" name="matchDate" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label for="matchTime" class="col-sm-3 col-form-label">Match Time:</label>
+                                <div class="col-sm-9">
+                                    <input type="time" class="form-control" id="matchTime" name="matchTime" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label for="round" class="col-sm-3 col-form-label">Round:</label>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="round" name="round" required>
+                                        <option value="">Select Round</option>
+                                        <option value="QS">Qualifying Stage (QS)</option>
+                                        <option value="R32">Round of 32 (R32)</option>
+                                        <option value="R16">Round of 16 (R16)</option>
+                                        <option value="QF">Quarter Final (QF)</option>
+                                        <option value="SF">Semi Final (SF)</option>
+                                        <option value="F">Final (F)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label for="stadium" class="col-sm-3 col-form-label">Stadium:</label>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="stadium" name="stadium" required>
+                                        <option value="">Select Stadium</option>
+                                        <option value="Lusail">Lusail Stadium</option>
+                                        <option value="Al Bayt">Al Bayt Stadium</option>
+                                        <option value="Khalifa">Khalifa Stadium</option>
+                                        <option value="Al Thumama">Al Thumama Stadium</option>
+                                        <option value="Education City">Education City Stadium</option>
+                                        <option value="974">974 Stadium</option>
+                                        <option value="Al Janoub">Al Janoub Stadium</option>
+                                        <option value="Ahmad Bin Ali">Ahmad Bin Ali Stadium</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label for="team1" class="col-sm-3 col-form-label">Team 1:</label>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="team1" name="team1" required>
+                                        <option value="">Select Team</option>
+                                        <option value="1">Argentina</option>
+                                        <option value="2">France</option>
+                                        <option value="3">Brazil</option>
+                                        <option value="4">Croatia</option>
+                                        <option value="5">Morocco</option>
+                                        <option value="6">England</option>
+                                        <option value="7">Portugal</option>
+                                        <option value="8">Japan</option>
+                                        <option value="9">Germany</option>
+                                        <option value="10">Saudi Arabia</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label for="team2" class="col-sm-3 col-form-label">Team 2:</label>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="team2" name="team2" required>
+                                        <option value="">Select Team</option>
+                                        <option value="1">Argentina</option>
+                                        <option value="2">France</option>
+                                        <option value="3">Brazil</option>
+                                        <option value="4">Croatia</option>
+                                        <option value="5">Morocco</option>
+                                        <option value="6">England</option>
+                                        <option value="7">Portugal</option>
+                                        <option value="8">Japan</option>
+                                        <option value="9">Germany</option>
+                                        <option value="10">Saudi Arabia</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label for="referee" class="col-sm-3 col-form-label">Referee:</label>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="referee" name="referee" required>
+                                        <option value="">Select Referee</option>
+                                        <option value="1">Szymon Marciniak</option>
+                                        <option value="2">Daniele Orsato</option>
+                                        <option value="3">Cesar Ramos</option>
+                                        <option value="4">Antonio Mateu Lahoz</option>
+                                        <option value="5">Jesus Valenzuela</option>
+                                        <option value="6">Wilton Sampaio</option>
+                                        <option value="7">Slavko Vincic</option>
+                                        <option value="8">Raphael Claus</option>
+                                        <option value="9">Ismail Elfath</option>
+                                        <option value="10">Abdulrahman Al Jassim</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary">Schedule Match</button>
+                                <button type="reset" class="btn btn-secondary">Reset Form</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div id="resultContainer" class="result-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4>Match Scheduled Successfully</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="resultContent">
+                                <!-- Result will be populated here -->
+                            </div>
+                            <div class="text-center mt-3">
+                                <button id="addAnotherBtn" class="btn btn-success">Add Another Match</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 - World Cup Database Project</p>
+            <p>Developed by: Yigit Ali Erdem, Arman Ibrisim, Cagdas Eylem Aksoy</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('addMatchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const matchDate = document.getElementById('matchDate').value;
+            const matchTime = document.getElementById('matchTime').value;
+            const round = document.getElementById('round').value;
+            const stadium = document.getElementById('stadium').value;
+            const team1 = document.getElementById('team1').value;
+            const team2 = document.getElementById('team2').value;
+            const referee = document.getElementById('referee').value;
+            
+            // Validation to ensure teams are different
+            if (team1 === team2) {
+                alert('Error: Team 1 and Team 2 cannot be the same team!');
+                return;
+            }
+            
+            // In a real application, this would be an AJAX call to a backend that executes the stored procedure
+            // For this example, we'll simulate a successful response
+            
+            // Hide the form and show the result
+            document.getElementById('addMatchForm').style.display = 'none';
+            document.getElementById('resultContainer').style.display = 'block';
+            
+            // Populate result content
+            let teamName1 = document.getElementById('team1').options[document.getElementById('team1').selectedIndex].text;
+            let teamName2 = document.getElementById('team2').options[document.getElementById('team2').selectedIndex].text;
+            let stadiumName = document.getElementById('stadium').options[document.getElementById('stadium').selectedIndex].text;
+            let refereeName = document.getElementById('referee').options[document.getElementById('referee').selectedIndex].text;
+            
+            document.getElementById('resultContent').innerHTML = `
+                <div class="alert alert-success">
+                    <h5>Match successfully scheduled!</h5>
+                    <p>Match ID: 11 (simulated)</p>
+                </div>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Date:</th>
+                        <td>${matchDate}</td>
+                    </tr>
+                    <tr>
+                        <th>Time:</th>
+                        <td>${matchTime}</td>
+                    </tr>
+                    <tr>
+                        <th>Round:</th>
+                        <td>${round}</td>
+                    </tr>
+                    <tr>
+                        <th>Stadium:</th>
+                        <td>${stadiumName}</td>
+                    </tr>
+                    <tr>
+                        <th>Team 1:</th>
+                        <td>${teamName1}</td>
+                    </tr>
+                    <tr>
+                        <th>Team 2:</th>
+                        <td>${teamName2}</td>
+                    </tr>
+                    <tr>
+                        <th>Referee:</th>
+                        <td>${refereeName}</td>
+                    </tr>
+                </table>
+            `;
+        });
+        
+        document.getElementById('addAnotherBtn').addEventListener('click', function() {
+            // Show the form and hide the result
+            document.getElementById('addMatchForm').style.display = 'block';
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('addMatchForm').reset();
+        });
+    </script>
+</body>
+</html>
+
+<!-- register_goal.html - Module 2 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Goal - World Cup Database</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .jumbotron {
+            background-color: #8a1538;
+            color: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 0.3rem;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background-color: #56042c;
+            color: white;
+        }
+        .result-container {
+            display: none;
+            margin-top: 20px;
+        }
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="display-4">Register Goal</h1>
+            <p class="lead">Record a new goal in the World Cup Database</p>
+            <a href="index.html" class="btn btn-light">Back to Home</a>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Goal Details Form</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="registerGoalForm">
+                            <div class="mb-3 row">
+                                <label for="match" class="col-sm-3 col-form-label">Match:</label>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="match" name="match" required>
+                                        <option value="">Select Match</option>
+                                        <option value="1">Argentina vs France (Final)</option>
+                                        <option value="2">France vs Morocco (Semi Final)</option>
+                                        <option value="3">Argentina vs Croatia (Semi Final)</option>
+                                        <option value="4">Croatia vs Brazil (Quarter Final)</option>
+                                        <option value="5">England vs France (Quarter Final)</option>
+                                        <option value="6">Portugal vs Morocco (Round of 16)</option>
+                                        <option value="7">Portugal vs Switzerland (Round of 16)</option>
+                                        <option value="8">England vs Senegal (Round of 16)</option>
+                                        <option value="9">Croatia vs Belgium (Group Stage)</option>
+                                        <option value="10">Brazil vs Switzerland (Group Stage)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 row">
+                                <label for="player" class="col-sm-3 col-form-label">Goal Scorer:</label>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="player" name="player" required>
+                                        <option value="">Select Player</option>
+                                        <option value="1">Lionel Messi
