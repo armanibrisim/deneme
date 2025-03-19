@@ -3,259 +3,634 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Goal - World Cup Database</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <title>Football Database Management System</title>
     <style>
         body {
-            background-color: #f8f9fa;
-            padding-top: 20px;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f9;
+            color: #333;
         }
-        .jumbotron {
-            background-color: #8a1538;
+        header {
+            background-color: #1a3e5f;
             color: white;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border-radius: 0.3rem;
+            padding: 20px;
+            text-align: center;
         }
-        .card {
-            margin-bottom: 20px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .tab-container {
+            background: white;
+            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        .card-header {
-            background-color: #56042c;
+        .tabs {
+            display: flex;
+            background: #e9ecef;
+        }
+        .tab {
+            padding: 15px 20px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background: #1a3e5f;
             color: white;
+        }
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        form {
+            display: grid;
+            grid-gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #1a3e5f;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0f2b47;
         }
         .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 4px;
             display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
-        footer {
-            margin-top: 50px;
-            padding: 20px 0;
-            background-color: #343a40;
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+        }
+        th {
+            background-color: #1a3e5f;
             color: white;
-            text-align: center;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>Football Database Management System</h1>
+    </header>
+    
     <div class="container">
-        <div class="jumbotron">
-            <h1 class="display-4">Register Goal</h1>
-            <p class="lead">Record a new goal in the World Cup Database</p>
-            <a href="index.html" class="btn btn-light">Back to Home</a>
-        </div>
-        
-        <div class="row">
-            <div class="col-md-8 offset-md-2">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Goal Details Form</h4>
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab active" onclick="openTab(event, 'addMatch')">Add New Match</button>
+                <button class="tab" onclick="openTab(event, 'registerGoal')">Register Goal</button>
+                <button class="tab" onclick="openTab(event, 'teamPerformance')">Team Performance</button>
+            </div>
+            
+            <!-- Add New Match Tab -->
+            <div id="addMatch" class="tab-content active">
+                <h2>Add New Football Match</h2>
+                <form id="addMatchForm" onsubmit="return simulateAddMatch(event)">
+                    <div class="form-group">
+                        <label for="matchDate">Date of Match:</label>
+                        <input type="date" id="matchDate" name="matchDate" required>
                     </div>
-                    <div class="card-body">
-                        <form id="registerGoalForm">
-                            <div class="mb-3 row">
-                                <label for="match" class="col-sm-3 col-form-label">Match:</label>
-                                <div class="col-sm-9">
-                                    <select class="form-select" id="match" name="match" required>
-                                        <option value="">Select Match</option>
-                                        <option value="1">Argentina vs France (Final)</option>
-                                        <option value="2">France vs Morocco (Semi Final)</option>
-                                        <option value="3">Argentina vs Croatia (Semi Final)</option>
-                                        <option value="4">Croatia vs Brazil (Quarter Final)</option>
-                                        <option value="5">England vs France (Quarter Final)</option>
-                                        <option value="6">Portugal vs Morocco (Round of 16)</option>
-                                        <option value="7">Portugal vs Switzerland (Round of 16)</option>
-                                        <option value="8">England vs Senegal (Round of 16)</option>
-                                        <option value="9">Croatia vs Belgium (Group Stage)</option>
-                                        <option value="10">Brazil vs Switzerland (Group Stage)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3 row">
-                                <label for="player" class="col-sm-3 col-form-label">Goal Scorer:</label>
-                                <div class="col-sm-9">
-                                    <select class="form-select" id="player" name="player" required>
-                                        <option value="">Select Player</option>
-                                        <option value="1">Lionel Messi</option>
-                                        <option value="2">Kylian Mbappé</option>
-                                        <option value="3">Olivier Giroud</option>
-                                        <option value="4">Julian Alvarez</option>
-                                        <option value="5">Neymar Jr.</option>
-                                        <option value="6">Luka Modric</option>
-                                        <option value="7">Harry Kane</option>
-                                        <option value="8">Cristiano Ronaldo</option>
-                                        <option value="9">Richarlison</option>
-                                        <option value="10">Bukayo Saka</option>
-                                        <option value="11">Achraf Hakimi</option>
-                                        <option value="12">Marcus Rashford</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3 row">
-                                <label for="goalMinute" class="col-sm-3 col-form-label">Minute:</label>
-                                <div class="col-sm-9">
-                                    <input type="number" class="form-control" id="goalMinute" name="goalMinute" min="1" max="120" required>
-                                    <small class="form-text text-muted">Enter a value between 1 and 120 (including injury time)</small>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3 row">
-                                <label for="goalType" class="col-sm-3 col-form-label">Goal Type:</label>
-                                <div class="col-sm-9">
-                                    <select class="form-select" id="goalType" name="goalType" required>
-                                        <option value="">Select Goal Type</option>
-                                        <option value="OP">Open Play (OP)</option>
-                                        <option value="PK">Penalty Kick (PK)</option>
-                                        <option value="FK">Free Kick (FK)</option>
-                                        <option value="OG">Own Goal (OG)</option>
-                                        <option value="H">Header (H)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3 row">
-                                <label for="assisted" class="col-sm-3 col-form-label">Assisted By:</label>
-                                <div class="col-sm-9">
-                                    <select class="form-select" id="assisted" name="assisted">
-                                        <option value="">No Assist / Not Applicable</option>
-                                        <option value="1">Lionel Messi</option>
-                                        <option value="2">Kylian Mbappé</option>
-                                        <option value="3">Olivier Giroud</option>
-                                        <option value="4">Julian Alvarez</option>
-                                        <option value="5">Neymar Jr.</option>
-                                        <option value="6">Luka Modric</option>
-                                        <option value="7">Harry Kane</option>
-                                        <option value="8">Cristiano Ronaldo</option>
-                                        <option value="9">Richarlison</option>
-                                        <option value="10">Bukayo Saka</option>
-                                        <option value="11">Achraf Hakimi</option>
-                                        <option value="12">Marcus Rashford</option>
-                                    </select>
-                                    <small class="form-text text-muted">Leave blank for penalties, free kicks, or if no assist</small>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3 row">
-                                <label for="additionalInfo" class="col-sm-3 col-form-label">Additional Info:</label>
-                                <div class="col-sm-9">
-                                    <textarea class="form-control" id="additionalInfo" name="additionalInfo" rows="3"></textarea>
-                                    <small class="form-text text-muted">Optional: Add any relevant details about the goal</small>
-                                </div>
-                            </div>
-                            
-                            <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-primary">Register Goal</button>
-                                <button type="reset" class="btn btn-secondary">Reset Form</button>
-                            </div>
-                        </form>
+                    
+                    <div class="form-group">
+                        <label for="matchTime">Time of Match:</label>
+                        <input type="time" id="matchTime" name="matchTime" required>
                     </div>
-                </div>
+                    
+                    <div class="form-group">
+                        <label for="matchRound">Round:</label>
+                        <select id="matchRound" name="matchRound" required>
+                            <option value="QS">Qualification Stage (QS)</option>
+                            <option value="R32">Round of 32 (R32)</option>
+                            <option value="R16">Round of 16 (R16)</option>
+                            <option value="QF">Quarter Final (QF)</option>
+                            <option value="SF">Semi Final (SF)</option>
+                            <option value="F">Final (F)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="stadiumName">Stadium Name:</label>
+                        <input type="text" id="stadiumName" name="stadiumName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="team1">Home Team:</label>
+                        <select id="team1" name="team1" required>
+                            <option value="1">Manchester United</option>
+                            <option value="2">Real Madrid</option>
+                            <option value="3">Barcelona</option>
+                            <option value="4">Bayern Munich</option>
+                            <option value="5">Liverpool</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="team2">Away Team:</label>
+                        <select id="team2" name="team2" required>
+                            <option value="1">Manchester United</option>
+                            <option value="2">Real Madrid</option>
+                            <option value="3">Barcelona</option>
+                            <option value="4">Bayern Munich</option>
+                            <option value="5">Liverpool</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="referee">Referee:</label>
+                        <select id="referee" name="referee" required>
+                            <option value="1">Michael Oliver</option>
+                            <option value="2">Felix Brych</option>
+                            <option value="3">Bjorn Kuipers</option>
+                            <option value="4">Daniele Orsato</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit">Add Match</button>
+                </form>
                 
-                <div id="resultContainer" class="result-container">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4>Goal Registered Successfully</h4>
-                        </div>
-                        <div class="card-body">
-                            <div id="resultContent">
-                                <!-- Result will be populated here -->
-                            </div>
-                            <div class="text-center mt-3">
-                                <button id="addAnotherBtn" class="btn btn-success">Register Another Goal</button>
-                            </div>
-                        </div>
+                <div id="addMatchResult" class="result-container">
+                    <div class="success-message">Match added successfully!</div>
+                    <table>
+                        <tr>
+                            <th>Match ID</th>
+                            <td id="newMatchId">123</td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td id="matchDateResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Time</th>
+                            <td id="matchTimeResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Round</th>
+                            <td id="matchRoundResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Stadium</th>
+                            <td id="stadiumResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Home Team</th>
+                            <td id="team1Result"></td>
+                        </tr>
+                        <tr>
+                            <th>Away Team</th>
+                            <td id="team2Result"></td>
+                        </tr>
+                        <tr>
+                            <th>Referee</th>
+                            <td id="refereeResult"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Register Goal Tab -->
+            <div id="registerGoal" class="tab-content">
+                <h2>Register New Goal</h2>
+                <form id="registerGoalForm" onsubmit="return simulateRegisterGoal(event)">
+                    <div class="form-group">
+                        <label for="matchId">Match ID:</label>
+                        <select id="matchId" name="matchId" required>
+                            <option value="1">Match #1: Manchester United vs Barcelona (2025-03-15)</option>
+                            <option value="2">Match #2: Real Madrid vs Bayern Munich (2025-03-16)</option>
+                            <option value="3">Match #3: Liverpool vs Barcelona (2025-03-17)</option>
+                            <option value="4">Match #4: Manchester United vs Real Madrid (2025-03-18)</option>
+                        </select>
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="playerId">Player:</label>
+                        <select id="playerId" name="playerId" required>
+                            <option value="1">Lionel Messi (Barcelona)</option>
+                            <option value="2">Cristiano Ronaldo (Real Madrid)</option>
+                            <option value="3">Robert Lewandowski (Bayern Munich)</option>
+                            <option value="4">Mohamed Salah (Liverpool)</option>
+                            <option value="5">Bruno Fernandes (Manchester United)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="goalMinute">Goal Minute:</label>
+                        <input type="number" id="goalMinute" name="goalMinute" min="1" max="120" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="goalType">Goal Type:</label>
+                        <select id="goalType" name="goalType" required>
+                            <option value="FG">From Game (FG)</option>
+                            <option value="OG">Own Goal (OG)</option>
+                            <option value="P">Penalty (P)</option>
+                            <option value="FK">Free Kick (FK)</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit">Register Goal</button>
+                </form>
+                
+                <div id="registerGoalResult" class="result-container">
+                    <div class="success-message">Goal registered successfully!</div>
+                    <table>
+                        <tr>
+                            <th>Goal ID</th>
+                            <td id="newGoalId">456</td>
+                        </tr>
+                        <tr>
+                            <th>Minute</th>
+                            <td id="goalMinuteResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Type</th>
+                            <td id="goalTypeResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Match</th>
+                            <td id="matchResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Team</th>
+                            <td id="teamResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Scorer</th>
+                            <td id="scorerResult"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Team Performance Tab -->
+            <div id="teamPerformance" class="tab-content">
+                <h2>Team Performance Report</h2>
+                <form id="teamPerformanceForm" onsubmit="return simulateTeamPerformance(event)">
+                    <div class="form-group">
+                        <label for="teamId">Select Team:</label>
+                        <select id="teamId" name="teamId" required>
+                            <option value="1">Manchester United</option>
+                            <option value="2">Real Madrid</option>
+                            <option value="3">Barcelona</option>
+                            <option value="4">Bayern Munich</option>
+                            <option value="5">Liverpool</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit">Generate Report</button>
+                </form>
+                
+                <div id="teamPerformanceResult" class="result-container">
+                    <h3>Team Information</h3>
+                    <table id="teamInfoTable">
+                        <tr>
+                            <th>Team Name</th>
+                            <td id="teamNameResult"></td>
+                        </tr>
+                        <tr>
+                            <th>FIFA Ranking</th>
+                            <td id="fifaRankingResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Total Goals</th>
+                            <td id="totalGoalsResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Total Points</th>
+                            <td id="totalPointsResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Matches Played</th>
+                            <td id="matchesPlayedResult"></td>
+                        </tr>
+                    </table>
+                    
+                    <h3>Manager</h3>
+                    <table id="managerTable">
+                        <tr>
+                            <th>Name</th>
+                            <td id="managerNameResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Yellow Cards</th>
+                            <td id="managerYellowCardsResult"></td>
+                        </tr>
+                        <tr>
+                            <th>Red Cards</th>
+                            <td id="managerRedCardsResult"></td>
+                        </tr>
+                    </table>
+                    
+                    <h3>Player Roster</h3>
+                    <table id="playersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Shirt #</th>
+                                <th>Yellow Cards</th>
+                                <th>Red Cards</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playersTableBody">
+                            <!-- Player data will be inserted here dynamically -->
+                        </tbody>
+                    </table>
+                    
+                    <h3>Sponsors</h3>
+                    <table id="sponsorsTable">
+                        <thead>
+                            <tr>
+                                <th>Sponsor Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sponsorsTableBody">
+                            <!-- Sponsor data will be inserted here dynamically -->
+                        </tbody>
+                    </table>
+                    
+                    <h3>Match History</h3>
+                    <table id="matchesTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Round</th>
+                                <th>Stadium</th>
+                                <th>Opponent</th>
+                                <th>Referee</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matchesTableBody">
+                            <!-- Match data will be inserted here dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
     
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 - World Cup Database Project</p>
-            <p>Developed by: Yigit Ali Erdem, Arman Ibrisim, Cagdas Eylem Aksoy</p>
-        </div>
-    </footer>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('registerGoalForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Tab switching functionality
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].className = tabContents[i].className.replace(" active", "");
+            }
+            
+            const tabs = document.getElementsByClassName("tab");
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].className = tabs[i].className.replace(" active", "");
+            }
+            
+            document.getElementById(tabName).className += " active";
+            evt.currentTarget.className += " active";
+        }
+        
+        // Simulate adding a new match (would be replaced with actual AJAX calls to your backend)
+        function simulateAddMatch(event) {
+            event.preventDefault();
             
             // Get form values
-            const match = document.getElementById('match').value;
-            const player = document.getElementById('player').value;
-            const goalMinute = document.getElementById('goalMinute').value;
-            const goalType = document.getElementById('goalType').value;
-            const assisted = document.getElementById('assisted').value;
-            const additionalInfo = document.getElementById('additionalInfo').value;
+            const date = document.getElementById("matchDate").value;
+            const time = document.getElementById("matchTime").value;
+            const round = document.getElementById("matchRound").value;
+            const stadium = document.getElementById("stadiumName").value;
+            const team1Id = document.getElementById("team1").value;
+            const team2Id = document.getElementById("team2").value;
+            const refereeId = document.getElementById("referee").value;
             
-            // Validation to ensure player cannot assist themselves
-            if (player === assisted && assisted !== "") {
-                alert('Error: A player cannot assist their own goal!');
-                return;
-            }
+            // Display results (in a real app, this would come from the server)
+            document.getElementById("matchDateResult").textContent = date;
+            document.getElementById("matchTimeResult").textContent = time;
+            document.getElementById("matchRoundResult").textContent = document.getElementById("matchRound").options[document.getElementById("matchRound").selectedIndex].text;
+            document.getElementById("stadiumResult").textContent = stadium;
+            document.getElementById("team1Result").textContent = document.getElementById("team1").options[document.getElementById("team1").selectedIndex].text;
+            document.getElementById("team2Result").textContent = document.getElementById("team2").options[document.getElementById("team2").selectedIndex].text;
+            document.getElementById("refereeResult").textContent = document.getElementById("referee").options[document.getElementById("referee").selectedIndex].text;
+            document.getElementById("newMatchId").textContent = Math.floor(Math.random() * 1000) + 100; // Random match ID for demo
             
-            // In a real application, this would be an AJAX call to a backend that executes the stored procedure
-            // For this example, we'll simulate a successful response
+            // Show the result container
+            document.getElementById("addMatchResult").style.display = "block";
             
-            // Hide the form and show the result
-            document.getElementById('registerGoalForm').style.display = 'none';
-            document.getElementById('resultContainer').style.display = 'block';
-            
-            // Populate result content
-            let matchName = document.getElementById('match').options[document.getElementById('match').selectedIndex].text;
-            let playerName = document.getElementById('player').options[document.getElementById('player').selectedIndex].text;
-            let goalTypeName = document.getElementById('goalType').options[document.getElementById('goalType').selectedIndex].text;
-            let assistedName = "None";
-            
-            if (assisted !== "") {
-                assistedName = document.getElementById('assisted').options[document.getElementById('assisted').selectedIndex].text;
-            }
-            
-            document.getElementById('resultContent').innerHTML = `
-                <div class="alert alert-success">
-                    <h5>Goal successfully registered!</h5>
-                    <p>Goal ID: 25 (simulated)</p>
-                </div>
-                <table class="table table-bordered">
-                    <tr>
-                        <th>Match:</th>
-                        <td>${matchName}</td>
-                    </tr>
-                    <tr>
-                        <th>Scorer:</th>
-                        <td>${playerName}</td>
-                    </tr>
-                    <tr>
-                        <th>Minute:</th>
-                        <td>${goalMinute}'</td>
-                    </tr>
-                    <tr>
-                        <th>Goal Type:</th>
-                        <td>${goalTypeName}</td>
-                    </tr>
-                    <tr>
-                        <th>Assisted By:</th>
-                        <td>${assistedName}</td>
-                    </tr>
-                    <tr>
-                        <th>Additional Info:</th>
-                        <td>${additionalInfo || 'None provided'}</td>
-                    </tr>
-                </table>
-            `;
-        });
+            return false;
+        }
         
-        document.getElementById('addAnotherBtn').addEventListener('click', function() {
-            // Show the form and hide the result
-            document.getElementById('registerGoalForm').style.display = 'block';
-            document.getElementById('resultContainer').style.display = 'none';
-            document.getElementById('registerGoalForm').reset();
-        });
+        // Simulate registering a goal
+        function simulateRegisterGoal(event) {
+            event.preventDefault();
+            
+            // Get form values
+            const matchId = document.getElementById("matchId").value;
+            const playerId = document.getElementById("playerId").value;
+            const minute = document.getElementById("goalMinute").value;
+            const type = document.getElementById("goalType").value;
+            
+            // Display results
+            document.getElementById("goalMinuteResult").textContent = minute;
+            document.getElementById("goalTypeResult").textContent = document.getElementById("goalType").options[document.getElementById("goalType").selectedIndex].text;
+            document.getElementById("matchResult").textContent = document.getElementById("matchId").options[document.getElementById("matchId").selectedIndex].text;
+            document.getElementById("scorerResult").textContent = document.getElementById("playerId").options[document.getElementById("playerId").selectedIndex].text;
+            
+            // Set team name based on player selection (in a real app, this would come from the database)
+            const playerTeam = document.getElementById("playerId").options[document.getElementById("playerId").selectedIndex].text.split('(')[1].replace(')', '');
+            document.getElementById("teamResult").textContent = playerTeam;
+            
+            document.getElementById("newGoalId").textContent = Math.floor(Math.random() * 1000) + 100; // Random goal ID for demo
+            
+            // Show the result container
+            document.getElementById("registerGoalResult").style.display = "block";
+            
+            return false;
+        }
+        
+        // Simulate team performance report
+        function simulateTeamPerformance(event) {
+            event.preventDefault();
+            
+            // Get team ID
+            const teamId = document.getElementById("teamId").value;
+            const teamName = document.getElementById("teamId").options[document.getElementById("teamId").selectedIndex].text;
+            
+            // Populate team info (would come from database in real app)
+            document.getElementById("teamNameResult").textContent = teamName;
+            document.getElementById("fifaRankingResult").textContent = Math.floor(Math.random() * 10) + 1; // Random ranking 1-10
+            document.getElementById("totalGoalsResult").textContent = Math.floor(Math.random() * 50) + 20; // Random goals 20-70
+            document.getElementById("totalPointsResult").textContent = Math.floor(Math.random() * 30) + 15; // Random points 15-45
+            document.getElementById("matchesPlayedResult").textContent = Math.floor(Math.random() * 15) + 5; // Random matches 5-20
+            
+            // Populate manager info
+            const managers = {
+                "1": "Ole Gunnar Solskjaer",
+                "2": "Carlo Ancelotti",
+                "3": "Xavi Hernandez",
+                "4": "Julian Nagelsmann",
+                "5": "Jurgen Klopp"
+            };
+            document.getElementById("managerNameResult").textContent = managers[teamId];
+            document.getElementById("managerYellowCardsResult").textContent = Math.floor(Math.random() * 3); // Random yellow cards 0-2
+            document.getElementById("managerRedCardsResult").textContent = Math.floor(Math.random() * 2); // Random red cards 0-1
+            
+            // Populate players table
+            const playersTableBody = document.getElementById("playersTableBody");
+            playersTableBody.innerHTML = ""; // Clear existing data
+            
+            // Sample players data (would come from database in real app)
+            const positions = ["GK", "DF", "MF", "FW"];
+            const playerNames = {
+                "1": ["Bruno Fernandes", "Marcus Rashford", "Harry Maguire", "Luke Shaw", "David de Gea"],
+                "2": ["Karim Benzema", "Vinicius Jr", "Luka Modric", "Thibaut Courtois", "David Alaba"],
+                "3": ["Pedri", "Gavi", "Robert Lewandowski", "Frenkie de Jong", "Marc-Andre ter Stegen"],
+                "4": ["Thomas Muller", "Joshua Kimmich", "Leroy Sane", "Manuel Neuer", "Alphonso Davies"],
+                "5": ["Mohamed Salah", "Virgil van Dijk", "Trent Alexander-Arnold", "Alisson Becker", "Andrew Robertson"]
+            };
+            
+            for (let i = 0; i < playerNames[teamId].length; i++) {
+                const row = document.createElement("tr");
+                
+                const nameCell = document.createElement("td");
+                nameCell.textContent = playerNames[teamId][i];
+                row.appendChild(nameCell);
+                
+                const positionCell = document.createElement("td");
+                positionCell.textContent = positions[Math.floor(Math.random() * positions.length)];
+                row.appendChild(positionCell);
+                
+                const shirtCell = document.createElement("td");
+                shirtCell.textContent = Math.floor(Math.random() * 99) + 1;
+                row.appendChild(shirtCell);
+                
+                const yellowCardCell = document.createElement("td");
+                yellowCardCell.textContent = Math.floor(Math.random() * 6);
+                row.appendChild(yellowCardCell);
+                
+                const redCardCell = document.createElement("td");
+                redCardCell.textContent = Math.floor(Math.random() * 2);
+                row.appendChild(redCardCell);
+                
+                playersTableBody.appendChild(row);
+            }
+            
+            // Populate sponsors table
+            const sponsorsTableBody = document.getElementById("sponsorsTableBody");
+            sponsorsTableBody.innerHTML = ""; // Clear existing data
+            
+            // Sample sponsors (would come from database in real app)
+            const sponsors = {
+                "1": ["Adidas", "TeamViewer", "DXC Technology"],
+                "2": ["Emirates", "Adidas", "EA Sports"],
+                "3": ["Spotify", "Nike", "UNHCR"],
+                "4": ["Deutsche Telekom", "Adidas", "Qatar Airways"],
+                "5": ["Standard Chartered", "Nike", "Expedia"]
+            };
+            
+            for (let i = 0; i < sponsors[teamId].length; i++) {
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+                cell.textContent = sponsors[teamId][i];
+                row.appendChild(cell);
+                sponsorsTableBody.appendChild(row);
+            }
+            
+            // Populate matches table
+            const matchesTableBody = document.getElementById("matchesTableBody");
+            matchesTableBody.innerHTML = ""; // Clear existing data
+            
+            // Sample matches (would come from database in real app)
+            const opponents = {
+                "1": ["Barcelona", "Real Madrid", "Liverpool"],
+                "2": ["Manchester United", "Bayern Munich", "Barcelona"],
+                "3": ["Real Madrid", "Liverpool", "Manchester United"],
+                "4": ["Real Madrid", "Liverpool", "Barcelona"],
+                "5": ["Manchester United", "Bayern Munich", "Barcelona"]
+            };
+            
+            const rounds = ["R16", "QF", "SF"];
+            const stadiums = ["Old Trafford", "Santiago Bernabeu", "Camp Nou", "Allianz Arena", "Anfield"];
+            const referees = ["Michael Oliver", "Felix Brych", "Bjorn Kuipers", "Daniele Orsato"];
+            
+            // Generate random dates in March 2025
+            for (let i = 0; i < opponents[teamId].length; i++) {
+                const row = document.createElement("tr");
+                
+                const dateCell = document.createElement("td");
+                const day = 10 + i * 3; // Spread out the dates
+                dateCell.textContent = `2025-03-${day < 10 ? '0' + day : day}`;
+                row.appendChild(dateCell);
+                
+                const roundCell = document.createElement("td");
+                roundCell.textContent = rounds[i % rounds.length];
+                row.appendChild(roundCell);
+                
+                const stadiumCell = document.createElement("td");
+                stadiumCell.textContent = stadiums[i % stadiums.length];
+                row.appendChild(stadiumCell);
+                
+                const opponentCell = document.createElement("td");
+                opponentCell.textContent = opponents[teamId][i];
+                row.appendChild(opponentCell);
+                
+                const refereeCell = document.createElement("td");
+                refereeCell.textContent = referees[i % referees.length];
+                row.appendChild(refereeCell);
+                
+                matchesTableBody.appendChild(row);
+            }
+            
+            // Show the result container
+            document.getElementById("teamPerformanceResult").style.display = "block";
+            
+            return false;
+        }
     </script>
 </body>
 </html>
