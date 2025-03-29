@@ -1,103 +1,9 @@
-index.php
-<?php
-session_start();
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Football Match Management</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        form { background-color: #f4f4f4; padding: 20px; margin-bottom: 20px; }
-        input, select { margin: 10px 0; width: 100%; padding: 5px; }
-        .result { background-color: #e0e0e0; padding: 10px; margin-top: 10px; }
-    </style>
-</head>
-<body>
-    <h1>Football Match Management System</h1>
-
-    <!-- Add New Match Form -->
-    <form action="add_match.php" method="post">
-        <h2>Add New Match</h2>
-        <label>Date of Match:</label>
-        <input type="date" name="date_of_match" required>
-        
-        <label>Time of Match:</label>
-        <input type="time" name="time_of_match" required>
-        
-        <label>Round:</label>
-        <select name="round" required>
-            <option value="QS">Quarter Semi</option>
-            <option value="R32">Round of 32</option>
-            <option value="R16">Round of 16</option>
-            <option value="QF">Quarter Finals</option>
-            <option value="SF">Semi Finals</option>
-            <option value="F">Final</option>
-        </select>
-        
-        <label>Stadium Name:</label>
-        <input type="text" name="stadium_name" required>
-        
-        <label>Team 1 ID:</label>
-        <input type="number" name="team1_ID" required>
-        
-        <label>Team 2 ID:</label>
-        <input type="number" name="team2_ID" required>
-        
-        <label>Referee ID:</label>
-        <input type="number" name="referee_ID" required>
-        
-        <input type="submit" value="Add Match">
-    </form>
-
-    <!-- Register Goal Form -->
-    <form action="register_goal.php" method="post">
-        <h2>Register Goal</h2>
-        <label>Match ID:</label>
-        <input type="number" name="match_ID" required>
-        
-        <label>Player ID:</label>
-        <input type="number" name="player_ID" required>
-        
-        <label>Goal Minute:</label>
-        <input type="number" name="goal_minute" required>
-        
-        <label>Goal Type:</label>
-        <select name="goal_type" required>
-            <option value="FG">Field Goal</option>
-            <option value="OG">Own Goal</option>
-            <option value="P">Penalty</option>
-            <option value="FK">Free Kick</option>
-        </select>
-        
-        <input type="submit" value="Register Goal">
-    </form>
-
-    <!-- Team Performance Form -->
-    <form action="team_performance.php" method="post">
-        <h2>Team Performance Report</h2>
-        <label>Team ID:</label>
-        <input type="number" name="team_ID" required>
-        
-        <input type="submit" value="Get Team Performance">
-    </form>
-
-    <?php
-    if (isset($_SESSION['result'])) {
-        echo "<div class='result'>" . $_SESSION['result'] . "</div>";
-        unset($_SESSION['result']);
-    }
-    ?>
-</body>
-</html>
-
 db_connection.php
 <?php
 $servername = "localhost";
-$username = "your_username";  // Replace with your database username
-$password = "your_password";  // Replace with your database password
-$dbname = "football_tournament";  // Replace with your database name
+$username = "root";         // Typically 'root' for local development
+$password = "";             // Usually empty for local setups
+$dbname = "football_tournament";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -106,6 +12,226 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
+// Set character set
+$conn->set_charset("utf8mb4");
+?>
+
+index.php
+<?php
+session_start();
+require 'db_connection.php';
+
+// Fetch teams for dropdown
+$teams_query = "SELECT team_ID, team_Name FROM Teams";
+$teams_result = $conn->query($teams_query);
+
+// Fetch players for goal registration
+$players_query = "SELECT player_ID, CONCAT(name, ' ', surname) AS player_name FROM Football_Players";
+$players_result = $conn->query($players_query);
+
+// Fetch referees
+$referees_query = "SELECT referee_ID, CONCAT(name, ' ', surname) AS referee_name FROM Referees";
+$referees_result = $conn->query($referees_query);
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Football Tournament Management</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+        }
+        .form-section {
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .form-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .result {
+            background-color: #e7f3fe;
+            border: 1px solid #b6d4fe;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Football Tournament Management System</h1>
+
+    <!-- Add New Match Form -->
+    <div class="form-section">
+        <h2>Add New Match</h2>
+        <form action="add_match.php" method="post">
+            <label>Date of Match:</label>
+            <input type="date" name="date_of_match" required>
+            
+            <label>Time of Match:</label>
+            <input type="time" name="time_of_match" required>
+            
+            <label>Round:</label>
+            <select name="round" required>
+                <option value="QS">Quarter Semi</option>
+                <option value="R32">Round of 32</option>
+                <option value="R16">Round of 16</option>
+                <option value="QF">Quarter Finals</option>
+                <option value="SF">Semi Finals</option>
+                <option value="F">Final</option>
+            </select>
+            
+            <label>Stadium Name:</label>
+            <input type="text" name="stadium_name" required>
+            
+            <label>Team 1:</label>
+            <select name="team1_ID" required>
+                <?php while($team = $teams_result->fetch_assoc()): ?>
+                    <option value="<?php echo $team['team_ID']; ?>">
+                        <?php echo $team['team_Name']; ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+            
+            <label>Team 2:</label>
+            <select name="team2_ID" required>
+                <?php 
+                // Reset pointer
+                $teams_result->data_seek(0);
+                while($team = $teams_result->fetch_assoc()): ?>
+                    <option value="<?php echo $team['team_ID']; ?>">
+                        <?php echo $team['team_Name']; ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+            
+            <label>Referee:</label>
+            <select name="referee_ID" required>
+                <?php while($referee = $referees_result->fetch_assoc()): ?>
+                    <option value="<?php echo $referee['referee_ID']; ?>">
+                        <?php echo $referee['referee_name']; ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+            
+            <input type="submit" value="Add Match">
+        </form>
+    </div>
+
+    <!-- Register Goal Form -->
+    <div class="form-section">
+        <h2>Register Goal</h2>
+        <form action="register_goal.php" method="post">
+            <!-- Matches Dropdown -->
+            <?php 
+            // Fetch matches
+            $matches_query = "SELECT match_ID, 
+                CONCAT(t1.team_Name, ' vs ', t2.team_Name, ' on ', date_of_match) AS match_details 
+                FROM Matches m
+                JOIN Teams t1 ON m.team_ID = t1.team_ID
+                JOIN Plays_In pi ON m.match_ID = pi.match_ID
+                JOIN Teams t2 ON pi.team_ID != m.team_ID
+                GROUP BY m.match_ID";
+            $matches_result = $conn->query($matches_query);
+            ?>
+            
+            <label>Match:</label>
+            <select name="match_ID" required>
+                <?php while($match = $matches_result->fetch_assoc()): ?>
+                    <option value="<?php echo $match['match_ID']; ?>">
+                        <?php echo $match['match_details']; ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+            
+            <label>Goal Scorer:</label>
+            <select name="player_ID" required>
+                <?php 
+                // Reset players result pointer
+                $players_result->data_seek(0);
+                while($player = $players_result->fetch_assoc()): ?>
+                    <option value="<?php echo $player['player_ID']; ?>">
+                        <?php echo $player['player_name']; ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+            
+            <label>Goal Minute:</label>
+            <input type="number" name="goal_minute" min="0" max="120" required>
+            
+            <label>Goal Type:</label>
+            <select name="goal_type" required>
+                <option value="FG">Field Goal</option>
+                <option value="OG">Own Goal</option>
+                <option value="P">Penalty</option>
+                <option value="FK">Free Kick</option>
+            </select>
+            
+            <input type="submit" value="Register Goal">
+        </form>
+    </div>
+
+    <!-- Team Performance Form -->
+    <div class="form-section">
+        <h2>Team Performance Report</h2>
+        <form action="team_performance.php" method="post">
+            <label>Team:</label>
+            <select name="team_ID" required>
+                <?php 
+                // Reset teams result pointer
+                $teams_result->data_seek(0);
+                while($team = $teams_result->fetch_assoc()): ?>
+                    <option value="<?php echo $team['team_ID']; ?>">
+                        <?php echo $team['team_Name']; ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+            
+            <input type="submit" value="Get Team Performance">
+        </form>
+    </div>
+
+    <?php
+    // Display results or errors
+    if (isset($_SESSION['result'])) {
+        $result_type = isset($_SESSION['result_type']) ? $_SESSION['result_type'] : 'success';
+        echo "<div class='result " . $result_type . "'>" . $_SESSION['result'] . "</div>";
+        unset($_SESSION['result']);
+        unset($_SESSION['result_type']);
+    }
+    ?>
+</body>
+</html>
+
+<?php
+// Close the database connection
+$conn->close();
 ?>
 
 add_match.php
@@ -114,26 +240,48 @@ session_start();
 require 'db_connection.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $date_of_match = $_POST['date_of_match'];
-    $time_of_match = $_POST['time_of_match'];
-    $round = $_POST['round'];
-    $stadium_name = $_POST['stadium_name'];
-    $team1_ID = $_POST['team1_ID'];
-    $team2_ID = $_POST['team2_ID'];
-    $referee_ID = $_POST['referee_ID'];
+    // Validate inputs
+    $date_of_match = $conn->real_escape_string($_POST['date_of_match']);
+    $time_of_match = $conn->real_escape_string($_POST['time_of_match']);
+    $round = $conn->real_escape_string($_POST['round']);
+    $stadium_name = $conn->real_escape_string($_POST['stadium_name']);
+    $team1_ID = intval($_POST['team1_ID']);
+    $team2_ID = intval($_POST['team2_ID']);
+    $referee_ID = intval($_POST['referee_ID']);
+
+    // Additional validation
+    if ($team1_ID == $team2_ID) {
+        $_SESSION['result'] = "Error: Teams must be different!";
+        $_SESSION['result_type'] = 'error';
+        header("Location: index.php");
+        exit();
+    }
 
     // Prepare and execute the stored procedure
     $stmt = $conn->prepare("CALL add_new_match(?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssiis", $date_of_match, $time_of_match, $round, $stadium_name, $team1_ID, $team2_ID, $referee_ID);
+    $stmt->bind_param("ssssiis", 
+        $date_of_match, 
+        $time_of_match, 
+        $round, 
+        $stadium_name, 
+        $team1_ID, 
+        $team2_ID, 
+        $referee_ID
+    );
     
     try {
         $stmt->execute();
         $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
         
-        $_SESSION['result'] = "New Match Added Successfully! Match ID: " . $row['New Match ID'];
+        if ($result) {
+            $row = $result->fetch_assoc();
+            $_SESSION['result'] = "New Match Added Successfully! Match ID: " . $row['New Match ID'];
+        } else {
+            $_SESSION['result'] = "Match added, but no match ID returned.";
+        }
     } catch (Exception $e) {
         $_SESSION['result'] = "Error: " . $e->getMessage();
+        $_SESSION['result_type'] = 'error';
     }
     
     $stmt->close();
@@ -150,26 +298,46 @@ session_start();
 require 'db_connection.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $match_ID = $_POST['match_ID'];
-    $player_ID = $_POST['player_ID'];
-    $goal_minute = $_POST['goal_minute'];
-    $goal_type = $_POST['goal_type'];
+    // Validate and sanitize inputs
+    $match_ID = intval($_POST['match_ID']);
+    $player_ID = intval($_POST['player_ID']);
+    $goal_minute = intval($_POST['goal_minute']);
+    $goal_type = $conn->real_escape_string($_POST['goal_type']);
+
+    // Additional validation
+    if ($goal_minute < 0 || $goal_minute > 120) {
+        $_SESSION['result'] = "Error: Invalid goal minute. Must be between 0 and 120.";
+        $_SESSION['result_type'] = 'error';
+        header("Location: index.php");
+        exit();
+    }
 
     // Prepare and execute the stored procedure
     $stmt = $conn->prepare("CALL register_goal(?, ?, ?, ?)");
-    $stmt->bind_param("iisi", $match_ID, $player_ID, $goal_minute, $goal_type);
+    $stmt->bind_param("iisi", 
+        $match_ID, 
+        $player_ID, 
+        $goal_minute, 
+        $goal_type
+    );
     
     try {
         $stmt->execute();
         $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
         
-        $_SESSION['result'] = "Goal Registered Successfully! Goal ID: " . $row['goal_ID'] . 
-                               "<br>Scorer: " . $row['Scorer'] . 
-                               "<br>Goal Type: " . $row['goal_type'] . 
-                               "<br>Goal Minute: " . $row['goal_minute'];
+        if ($result) {
+            $row = $result->fetch_assoc();
+            $_SESSION['result'] = "Goal Registered Successfully!<br>" .
+                "Goal ID: " . $row['goal_ID'] . "<br>" .
+                "Scorer: " . $row['Scorer'] . "<br>" .
+                "Goal Type: " . $row['goal_type'] . "<br>" .
+                "Goal Minute: " . $row['goal_minute'];
+        } else {
+            $_SESSION['result'] = "Goal registered, but no details returned.";
+        }
     } catch (Exception $e) {
         $_SESSION['result'] = "Error: " . $e->getMessage();
+        $_SESSION['result_type'] = 'error';
     }
     
     $stmt->close();
@@ -186,7 +354,8 @@ session_start();
 require 'db_connection.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $team_ID = $_POST['team_ID'];
+    // Validate input
+    $team_ID = intval($_POST['team_ID']);
 
     // Prepare and execute the stored procedure
     $stmt = $conn->prepare("CALL get_team_performance(?)");
@@ -195,52 +364,73 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         $stmt->execute();
 
-        // Output a detailed report
-        $output = "<h2>Team Performance Report for Team ID: $team_ID</h2>";
+        // Initialize output variable
+        $output = "<h2>Team Performance Report</h2>";
 
         // Team Information
         $stmt->nextResult();
         $result = $stmt->get_result();
-        $team_info = $result->fetch_assoc();
-        $output .= "<h3>Team Info</h3>";
-        $output .= "Team Name: " . $team_info['team_Name'] . "<br>";
-        $output .= "FIFA Ranking: " . $team_info['Fifa_Ranking'] . "<br>";
-        $output .= "Total Goals: " . $team_info['Total_Goals'] . "<br>";
-        $output .= "Total Points: " . $team_info['Total_Points'] . "<br>";
-        $output .= "Total Matches Played: " . $team_info['total_matches_played'] . "<br>";
+        if ($result && $team_info = $result->fetch_assoc()) {
+            $output .= "<div class='performance-section'>";
+            $output .= "<h3>Team Information</h3>";
+            $output .= "<p>Team Name: " . htmlspecialchars($team_info['team_Name']) . "</p>";
+            $output .= "<p>FIFA Ranking: " . htmlspecialchars($team_info['Fifa_Ranking']) . "</p>";
+            $output .= "<p>Total Goals: " . htmlspecialchars($team_info['Total_Goals']) . "</p>";
+            $output .= "<p>Total Points: " . htmlspecialchars($team_info['Total_Points']) . "</p>";
+            $output .= "<p>Total Matches Played: " . htmlspecialchars($team_info['total_matches_played']) . "</p>";
+            $output .= "</div>";
+        }
 
         // Manager Information
         $stmt->nextResult();
         $result = $stmt->get_result();
-        $manager_info = $result->fetch_assoc();
-        $output .= "<h3>Manager</h3>";
-        $output .= "Name: " . $manager_info['manager_name'] . "<br>";
-        $output .= "Yellow Cards: " . $manager_info['yellow_cards'] . "<br>";
-        $output .= "Red Cards: " . $manager_info['red_cards'] . "<br>";
+        if ($result && $manager_info = $result->fetch_assoc()) {
+            $output .= "<div class='performance-section'>";
+            $output .= "<h3>Manager</h3>";
+            $output .= "<p>Name: " . htmlspecialchars($manager_info['manager_name']) . "</p>";
+            $output .= "<p>Yellow Cards: " . htmlspecialchars($manager_info['yellow_cards']) . "</p>";
+            $output .= "<p>Red Cards: " . htmlspecialchars($manager_info['red_cards']) . "</p>";
+            $output .= "</div>";
+        }
 
-        // Player Information
+        // Players
         $stmt->nextResult();
         $result = $stmt->get_result();
-        $output .= "<h3>Players</h3>";
-        while ($player = $result->fetch_assoc()) {
-            $output .= "Name: " . $player['player_name'] . 
-                       " | Position: " . $player['position'] . 
-                       " | Shirt Number: " . $player['shirt_number'] . 
-                       " | Yellow Cards: " . $player['yellow_cards'] . 
-                       " | Red Cards: " . $player['red_cards'] . "<br>";
+        if ($result) {
+            $output .= "<div class='performance-section'>";
+            $output .= "<h3>Players</h3>";
+            $output .= "<table border='1'><tr><th>Name</th><th>Position</th><th>Shirt Number</th><th>Yellow Cards</th><th>Red Cards</th></tr>";
+            while ($player = $result->fetch_assoc()) {
+                $output .= "<tr>";
+                $output .= "<td>" . htmlspecialchars($player['player_name']) . "</td>";
+                $output .= "<td>" . htmlspecialchars($player['position']) . "</td>";
+                $output .= "<td>" . htmlspecialchars($player['shirt_number']) . "</td>";
+                $output .= "<td>" . htmlspecialchars($player['yellow_cards']) . "</td>";
+                $output .= "<td>" . htmlspecialchars($player['red_cards']) . "</td>";
+                $output .= "</tr>";
+            }
+            $output .= "</table>";
+            $output .= "</div>";
         }
 
         // Sponsors
         $stmt->nextResult();
         $result = $stmt->get_result();
-        $output .= "<h3>Sponsors</h3>";
-        while ($sponsor = $result->fetch_assoc()) {
-            $output .= $sponsor['sponsor_name'] . "<br>";
+        if ($result) {
+            $output .= "<div class='performance-section'>";
+            $output .= "<h3>Sponsors</h3>";
+            $output .= "<ul>";
+            while ($sponsor = $result->fetch_assoc()) {
+                $output .= "<li>" . htmlspecialchars($sponsor['sponsor_name']) . "</li>";
+            }
+            $output .= "</ul>";
+            $output .= "</div>";
         }
 
         $_SESSION['result'] = $output;
     } catch (Exception $e) {
         $_SESSION['result'] = "Error: " . $e->getMessage();
+        $_SESSION['result_type'] = 'error';
     }
     
     $stmt->close();
